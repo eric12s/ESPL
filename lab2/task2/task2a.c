@@ -7,7 +7,7 @@ void echo_printer(char c) {
 }
 
 void ascii_printer(char c) {
-    printf("%d", c);
+    printf("%d ", c);
 }
 
 void binary_printer(char c) {
@@ -20,6 +20,7 @@ void binary_printer(char c) {
 
     for(int i = 0; i < 8; i++)
         printf("%d", bin[i]);
+    printf("\n");
 }
 
 void lower_to_upper_printer(char c) {
@@ -29,7 +30,4 @@ void lower_to_upper_printer(char c) {
     else
         transformed = toupper(c);
     printf("%c", transformed);
-}
-
-int main(int argc, char **argv){
 }
