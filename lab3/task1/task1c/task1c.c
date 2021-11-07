@@ -149,5 +149,6 @@ int main(int argc , char **argv) {
     else
         list_print_only_first(diff_list, output, atoi(argv[firstNDifferences]));
     list_free(diff_list);
+    fclose(output);
     return 0;
 }
