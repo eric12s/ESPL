@@ -1,7 +1,11 @@
 How many parameters does this function have?
+1
 
 What does this function return?
+len of the paramter input
 
 How many local variables are used by this function?
+0
 
 Is there a function in the C standard library which is the counterpart of this function?
+strlen()
