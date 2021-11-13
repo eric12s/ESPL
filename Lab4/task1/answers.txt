@@ -2,10 +2,11 @@ How many parameters does this function have?
 1
 
 What does this function return?
-len of the paramter input
+length of the paramter input
 
 How many local variables are used by this function?
-0
+Two variables. The first is eax, which is the variable that calculates the length of the string, and ebx, which saves the char in
+the current index of the string.
 
 Is there a function in the C standard library which is the counterpart of this function?
-strlen()
+There is only strlen() in the string library of C.
