@@ -22,16 +22,16 @@ _start:
     add eax, 1
     movzx edx, BYTE [STR+eax] 
     cmp edx,ebx                             
-    je .Equals
+    je .equal_inc
     test dl, dl
-    je exit
+    je .print
     jmp .loop
 
-.Equals:
+.equal_inc:
     add ecx, 1
     jmp .loop
 
-exit:
+.print:
     sub  esp, 4 
     push ecx
     push STR
@@ -39,6 +39,9 @@ exit:
     push print_format
     call printf
     add esp, 12 
+    jmp exit
+
+exit:
     mov ebx, 0
     mov eax, 1
     int 80h
