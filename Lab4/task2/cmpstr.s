@@ -38,7 +38,7 @@ cmpstr:
 
 ; ----------------------------- string end handle -----------------------------
 first_string_ended:
-    test cl , cl                 ; check if current char in str2 is '\0'
+    test cl, cl                 ; check if current char in str2 is '\0'
     je both_strings_ended        ; if the char is \0 both strings are equal
     jmp calculate_diff
 
@@ -54,14 +54,8 @@ calculate_diff:
     mov eax, ebx                   ; set return value to be - 2 (second string is bigger)
     jmp FINALIZE
 
-first_bigger:
-    mov eax, 1                   ; set return value to be - 1 (first string is bigger)
-    jmp FINALIZE
-
-
 FINALIZE:
     mov esp, ebp                 ; move stack pointer to where it was before exe cmpstr
-
     pop ecx                      ; return ecx to caller's state
     pop ebx                      ; return ebx to caller's state
     pop ebp                      ; return ebp to caller's state

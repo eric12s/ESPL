@@ -22,13 +22,12 @@ _start:
     add eax, 1
     movzx edx, BYTE [STR+eax] 
     cmp edx,ebx                             
-    je .equal_inc
+    jne .continue
+    add ecx, 1    
+
+.continue:
     test dl, dl
     je .print
-    jmp .loop
-
-.equal_inc:
-    add ecx, 1
     jmp .loop
 
 .print:
