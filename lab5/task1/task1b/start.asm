@@ -145,20 +145,20 @@ loop:
 atou_s:
 	push ebp
 	push ebx
-	mov	ebp, esp
-	mov edx, [ebp+12]               ;get our string
 	mov eax, 0                      ;eax: will store our result
+	mov	ebp, esp
+	mov ebx, [ebp+12]               ;get our string
 	
 .loop_atou:
-	movzx ecx, byte [edx]           ;move to next char
-	inc edx                         ;increment edx: to read next char
-	cmp ecx, '0'                    ;check if there is a next char that is bigger than 0
+	movzx edx, byte [ebx]           ;move to next char
+	inc ebx                         ;increment edx: to read next char
+	cmp edx, '0'                    ;check if there is a next char that is bigger than 0
 	jnge end
-	cmp ecx, '9'                    ;check if there is a next char that is smaller than 9
+	cmp edx, '9'                    ;check if there is a next char that is smaller than 9
 	jnle end
-	sub ecx, 48                    ;convert char to int
 	imul eax, 10                    ;multiply our int by 10
-	add eax, ecx                    ;add our digit to the number we have until now
+	sub edx, 48                    ;convert char to int
+	add eax, edx                    ;add our digit to the number we have until now
 	jmp .loop_atou 
 
 end:
