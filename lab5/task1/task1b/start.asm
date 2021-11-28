@@ -153,9 +153,9 @@ atou_s:
 .loop_atou:
 	movzx edx, byte [ebx]           ;move to next char
 	inc ebx                         ;increment edx: to read next char
-	cmp edx, '0'                    ;check if there is a next char that is bigger than 0
+	cmp edx, 48                    ;check if there is a next char that is bigger than 0
 	jnge end
-	cmp edx, '9'                    ;check if there is a next char that is smaller than 9
+	cmp edx, 57                    ;check if there is a next char that is smaller than 9
 	jnle end
 	imul eax, 10                    ;multiply our int by 10
 	sub edx, 48                    ;convert char to int
@@ -163,8 +163,7 @@ atou_s:
 	jmp .loop_atou 
 
 end:
-	mov esp, ebp
-	pop ebp
+	leave
 	ret
 
 exit:
