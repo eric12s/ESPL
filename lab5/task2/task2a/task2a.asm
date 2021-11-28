@@ -12,7 +12,6 @@ global strlen
 global utoa_s
 global atou_s
 
-extern main
 _start:
 	; My code
 	mov eax, [esp] ; argc
@@ -25,6 +24,51 @@ _start:
 	mov	eax,1
 	int 0x80
 
+main:
+    enter 54, 0            ; 50 bytes for buffer starting at ebp-50 and 4 to file fd
+    mov ebx, dword [ebp + 12]
+    add ebx, 4
+    mov ebx, [ebx]          ; file name
+    push ebx
+    call open               ; fd at eax if succeed
+    pop ebx 
+
+    mov [ebp - 54], eax    ; fd -> stack
+
+.fileReader:
+    push 50        ; arg1 for read - size to read
+    mov ebx, ebp
+    sub ebx, 50             ; ebx points buffer start  
+    push ebx                ; arg2 for read - buffer
+    push dword [ebp - 54]   ; arg3 for read - fd
+    call read
+    pop ebx
+    pop ebx
+    pop ebx  
+
+    cmp eax, 0               ; check if read something
+    jg .printer
+
+    push dword [ebp - 54]  ; arg1 fd
+    call close
+    pop ebx              
+	mov eax, 0              
+	leave
+    ret   
+ 
+.printer:
+    push eax                ; arg1 from "read" num of bytes
+    mov ebx, ebp
+    sub ebx, 50
+    push ebx                ; arg2 buffer
+    push 1                  ; arg3 stdout
+    call write
+    pop ebx
+    pop ebx
+    pop ebx                 
+
+    jmp .fileReader           ; continue reading    
+
 read:
     enter 0, 0 ; replace "push ebp mov ebp, esp"
 
@@ -32,10 +76,10 @@ read:
 	push ecx
 	push edx
 
-	mov eax,3
-	mov ebx,[ebp+8] ; fd
-	mov ecx,[ebp+12] ; buffer
-	mov edx,[ebp+16] ; size
+	mov eax, 3
+	mov ebx, [ebp+8] ; fd
+	mov ecx, [ebp+12] ; buffer
+	mov edx, [ebp+16] ; size
 	int 0x80
 
 	pop edx
@@ -143,23 +187,34 @@ loop:
 	je exit
 
 atou_s:
-	push ebp
-	push ebx
-	mov	ebp, esp
-	mov edx, [ebp+12]               ;get our string
-	mov eax, 0                      ;eax: will store our result
-	
-.L1:
-	movzx ecx, byte [edx]           ;move to next char
-	inc edx                         ;increment edx: to read next char
-	cmp ecx, '0'                    ;check if there is a next char that is bigger than 0
-	jb end
-	cmp ecx, '9'                    ;check if there is a next char that is smaller than 9
-	ja end
-	sub ecx, '0'                    ;convert char to int
-	imul eax, 10                    ;multiply our int by 10
-	add eax, ecx                    ;add our digit to the number we have until now
-	jmp .L1  
+    enter 0, 0
+	sub esp, 8
+	pushad ; push the registers
+
+	mov ecx, arr
+
+	mov eax, [ebp+8]
+
+	mov byte [ecx+15], 0 ; end
+	mov dword [ebp-8], 0xF ;counter
+
+	cmp eax, 0
+	je exit
+
+loop_atou:
+	mov edx, 0
+	mov ecx, 10
+	div ecx ; eax/ecx 
+	mov [ebp-4], edx ; [ebp-4] = edx - stores the reminder
+	; add dword [ebp-4], 0x30  ; ans result to ascii value
+	mov edx, [ebp-4] ; edx = value
+	dec dword [ebp-8]
+	mov ecx , [ebp-8]
+	add ecx , arr ;ecx = arr[counter]
+	mov [ecx] , dl
+	cmp eax , 0
+	jne loop_atou
+	je exit
 
 end:
 	mov esp, ebp
