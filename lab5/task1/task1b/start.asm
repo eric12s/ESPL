@@ -147,19 +147,19 @@ atou_s:
 	sub esp, 8
 	pushad
 
-	mov eax, 0                      ;eax: will store our result
-	mov ebx, [ebp+8]               ;get our string
+	mov eax, 0
+	mov ebx, [ebp+8]               ; save the string
 	
 .loop_atou:
-	movzx edx, byte [ebx]           ;move to next char
-	inc ebx                         ;increment edx: to read next char
-	cmp edx, 48                    ;check if there is a next char that is bigger than 0
+	movzx edx, byte [ebx]           ; next number
+	inc ebx
+	cmp edx, 48						; 0
 	jnge end
-	cmp edx, 57                    ;check if there is a next char that is smaller than 9
+	cmp edx, 57						; 9
 	jnle end
-	imul eax, 10                    ;multiply our int by 10
-	sub edx, 48                    ;convert char to int
-	add eax, edx                    ;add our digit to the number we have until now
+	imul eax, 10
+	sub edx, 0x30                    ; char to int
+	add eax, edx
 	jmp .loop_atou 
 
 end:

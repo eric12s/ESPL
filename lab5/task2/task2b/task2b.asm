@@ -255,35 +255,25 @@ loop:
 	jne loop
 	je exit
 
-; atou_s:
-;     enter 0, 0
-; 	sub esp, 8
-; 	pushad ; push the registers
+atou_s:
+	enter 0, 0
+	sub esp, 8
+	pushad
 
-; 	mov ecx, arr
-
-; 	mov eax, [ebp+8]
-
-; 	mov byte [ecx+15], 0 ; end
-; 	mov dword [ebp-8], 0xF ;counter
-
-; 	cmp eax, 0
-; 	je exit
-
-; loop_atou:
-; 	mov edx, 0
-; 	mov ecx, 10
-; 	div ecx ; eax/ecx 
-; 	mov [ebp-4], edx ; [ebp-4] = edx - stores the reminder
-; 	; add dword [ebp-4], 0x30  ; ans result to ascii value
-; 	mov edx, [ebp-4] ; edx = value
-; 	dec dword [ebp-8]
-; 	mov ecx , [ebp-8]
-; 	add ecx , arr ;ecx = arr[counter]
-; 	mov [ecx] , dl
-; 	cmp eax , 0
-; 	jne loop_atou
-; 	je exit
+	mov eax, 0
+	mov ebx, [ebp+8]               ; save the string
+	
+.loop_atou:
+	movzx edx, byte [ebx]           ; next number
+	inc ebx
+	cmp edx, 48						; 0
+	jnge end
+	cmp edx, 57						; 9
+	jnle end
+	imul eax, 10
+	sub edx, 0x30                    ; char to int
+	add eax, edx
+	jmp .loop_atou
 
 end:
 	mov esp, ebp

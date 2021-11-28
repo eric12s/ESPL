@@ -20,52 +20,52 @@ _start:
 	push eax
 
 	call	main
-    mov     ebx,eax
+    mov     ecx,eax
 	mov	eax,1
 	int 0x80
 
 main:
     enter 54, 0            ; 50 bytes for buffer starting at ebp-50 and 4 to file fd
-    mov ebx, dword [ebp + 12]
-    add ebx, 4
-    mov ebx, [ebx]          ; file name
-    push ebx
+    mov ecx, dword [ebp + 12]
+    add ecx, 4
+    mov ecx, [ecx]          ; file name
+    push ecx
     call open               ; fd at eax if succeed
-    pop ebx 
+    pop ecx 
 
     mov [ebp - 54], eax    ; fd -> stack
 
 .fileReader:
     push 50        ; arg1 for read - size to read
-    mov ebx, ebp
-    sub ebx, 50             ; ebx points buffer start  
-    push ebx                ; arg2 for read - buffer
+    mov ecx, ebp
+    sub ecx, 50             ; ecx points buffer start  
+    push ecx                ; arg2 for read - buffer
     push dword [ebp - 54]   ; arg3 for read - fd
     call read
-    pop ebx
-    pop ebx
-    pop ebx  
+    pop ecx
+    pop ecx
+    pop ecx  
 
     cmp eax, 0               ; check if read something
     jg .printer
 
     push dword [ebp - 54]  ; arg1 fd
     call close
-    pop ebx              
+    pop ecx              
 	mov eax, 0              
 	leave
     ret   
  
 .printer:
     push eax                ; arg1 from "read" num of bytes
-    mov ebx, ebp
-    sub ebx, 50
-    push ebx                ; arg2 buffer
+    mov ecx, ebp
+    sub ecx, 50
+    push ecx                ; arg2 buffer
     push 1                  ; arg3 stdout
     call write
-    pop ebx
-    pop ebx
-    pop ebx                 
+    pop ecx
+    pop ecx
+    pop ecx                 
 
     jmp .fileReader           ; continue reading    
 
@@ -187,34 +187,24 @@ loop:
 	je exit
 
 atou_s:
-    enter 0, 0
+	enter 0, 0
 	sub esp, 8
-	pushad ; push the registers
+	pushad
 
-	mov ecx, arr
-
-	mov eax, [ebp+8]
-
-	mov byte [ecx+15], 0 ; end
-	mov dword [ebp-8], 0xF ;counter
-
-	cmp eax, 0
-	je exit
-
-loop_atou:
-	mov edx, 0
-	mov ecx, 10
-	div ecx ; eax/ecx 
-	mov [ebp-4], edx ; [ebp-4] = edx - stores the reminder
-	; add dword [ebp-4], 0x30  ; ans result to ascii value
-	mov edx, [ebp-4] ; edx = value
-	dec dword [ebp-8]
-	mov ecx , [ebp-8]
-	add ecx , arr ;ecx = arr[counter]
-	mov [ecx] , dl
-	cmp eax , 0
-	jne loop_atou
-	je exit
+	mov eax, 0
+	mov ebx, [ebp+8]               ; save the string
+	
+.loop_atou:
+	movzx edx, byte [ebx]           ; next number
+	inc ebx
+	cmp edx, 48						; 0
+	jnge end
+	cmp edx, 57						; 9
+	jnle end
+	imul eax, 10
+	sub edx, 0x30                    ; char to int
+	add eax, edx
+	jmp .loop_atou
 
 end:
 	mov esp, ebp
