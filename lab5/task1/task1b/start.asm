@@ -149,17 +149,17 @@ atou_s:
 	mov edx, [ebp+12]               ;get our string
 	mov eax, 0                      ;eax: will store our result
 	
-.L1:
+.loop_atou:
 	movzx ecx, byte [edx]           ;move to next char
 	inc edx                         ;increment edx: to read next char
 	cmp ecx, '0'                    ;check if there is a next char that is bigger than 0
-	jb end
+	jnge end
 	cmp ecx, '9'                    ;check if there is a next char that is smaller than 9
-	ja end
-	sub ecx, '0'                    ;convert char to int
+	jnle end
+	sub ecx, 48                    ;convert char to int
 	imul eax, 10                    ;multiply our int by 10
 	add eax, ecx                    ;add our digit to the number we have until now
-	jmp .L1  
+	jmp .loop_atou 
 
 end:
 	mov esp, ebp

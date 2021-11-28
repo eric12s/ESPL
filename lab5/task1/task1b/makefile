@@ -7,7 +7,7 @@
 all: lwca
 
 lwca: lwc.o start.o
-	ld  -melf_i386 -o $@ $^
+	ld -melf_i386 -o $@ $^
 
 clean:
 	rm -f *.o lwca

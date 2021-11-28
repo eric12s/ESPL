@@ -1,10 +1,12 @@
+#include <stdio.h>
+
 int open(char *name, int flags);
 int close(int fd);
 int read(int fd, char *buf, int size);
 int write(int fd, char *buf, int size);
 int strlen(char *s);
 char* utoa_s(int d);
-char* atou_s(char *s, char *b);
+int atou_s(char *s);
 
 #define EUSAGE	"usage: lwc [filename]\n"
 #define EARGC	"error: wrong number of arguments\n"
@@ -74,15 +76,18 @@ int main(int argc, char **argv) {
 	// print(utoa(nlines)); print(" lines\n");
 	// print(utoa(nwords)); print(" words\n");
 	// print(utoa(nchars)); print(" chars\n");
-	char buffer[16];
-	print(atou_s("123", buffer));
+	// char buffer[16];
+	// char *s = "123";
+	// print_int(123);
+
+	print(utoa_s(atou_s("123")));
+
 	return 0;
 
  USAGE:
 	write(2, EUSAGE, strlen(EUSAGE));
 	return 1;
 }
-
 
 void print(char *s) {
 	write(1, s, strlen(s));
