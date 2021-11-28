@@ -143,11 +143,12 @@ loop:
 	je exit
 
 atou_s:
-	push ebp
-	push ebx
+	enter 0, 0
+	sub esp, 8
+	pushad
+
 	mov eax, 0                      ;eax: will store our result
-	mov	ebp, esp
-	mov ebx, [ebp+12]               ;get our string
+	mov ebx, [ebp+8]               ;get our string
 	
 .loop_atou:
 	movzx edx, byte [ebx]           ;move to next char
@@ -163,7 +164,6 @@ atou_s:
 
 end:
 	mov esp, ebp
-	pop ebx
 	pop ebp
 	ret
 
