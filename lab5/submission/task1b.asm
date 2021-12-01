@@ -12,6 +12,7 @@ global strlen
 global utoa_s
 global atou_s
 
+extern main
 _start:
 	; My code
 	mov eax, [esp] ; argc
@@ -20,54 +21,9 @@ _start:
 	push eax
 
 	call	main
-    mov     ecx,eax
+    mov     ebx,eax
 	mov	eax,1
 	int 0x80
-
-main:
-    enter 54, 0            ; 50 bytes for buffer starting at ebp-50 and 4 to file fd
-    mov ecx, dword [ebp + 12]
-    add ecx, 4
-    mov ecx, [ecx]          ; file name
-    push ecx
-    call open
-    pop ecx 
-
-    mov [ebp - 54], eax    ; fd -> stack
-
-.fileReader:
-    push 50        ; arg1 for read - size to read
-    mov ecx, ebp
-    sub ecx, 50             ; ecx points buffer start  
-    push ecx                ; arg2 for read - buffer
-    push dword [ebp - 54]   ; arg3 for read - fd
-    call read
-    pop ecx
-    pop ecx
-    pop ecx  
-
-    cmp eax, 0               ; check if read something
-    jg .printer
-
-    push dword [ebp - 54]  ; arg1 fd
-    call close
-    pop ecx              
-	mov eax, 0              
-	leave
-    ret   
- 
-.printer:
-    push eax                ; arg1 from "read" num of bytes
-    mov ecx, ebp
-    sub ecx, 50
-    push ecx                ; arg2 buffer
-    push 1                  ; arg3 stdout
-    call write
-    pop ecx
-    pop ecx
-    pop ecx                 
-
-    jmp .fileReader           ; continue reading    
 
 read:
     enter 0, 0 ; replace "push ebp mov ebp, esp"
@@ -76,10 +32,10 @@ read:
 	push ecx
 	push edx
 
-	mov eax, 3
-	mov ebx, [ebp+8] ; fd
-	mov ecx, [ebp+12] ; buffer
-	mov edx, [ebp+16] ; size
+	mov eax,3
+	mov ebx,[ebp+8] ; fd
+	mov ecx,[ebp+12] ; buffer
+	mov edx,[ebp+16] ; size
 	int 0x80
 
 	pop edx
@@ -204,12 +160,10 @@ atou_s:
 	imul eax, 10
 	sub edx, 0x30                    ; char to int
 	add eax, edx
-	jmp .loop_atou
+	jmp .loop_atou 
 
 end:
-	mov esp, ebp
-	pop ebx
-	pop ebp
+	leave
 	ret
 
 exit:

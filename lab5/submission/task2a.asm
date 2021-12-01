@@ -1,12 +1,5 @@
-%include "cmpstr.asm"
-
-section .data
-    WFlag: db '-w', 0
-    WsFlag: db '-ws', 0
-
 section .bss 
 	arr: resb 32 ;reserve location array len
-	int_str_repr: resb 11    ;save place for convertion of int to str
 
 section .text
 	
@@ -22,121 +15,59 @@ global atou_s
 _start:
 	; My code
 	mov eax, [esp] ; argc
-	mov ebx, esp
-	add ebx, 4h ; argv
-	push ebx 
+	lea edx , [esp+4] ; argv
+	push edx 
 	push eax
 
 	call	main
-    mov     ebx, eax
-	mov	eax, 1
+    mov     ecx,eax
+	mov	eax,1
 	int 0x80
 
-%define flag byte [ebp-55]
-%define fileName dword [ebp-59]
-%define wordsCounter dword [ebp-63]
-%define wordToCount dword [ebp-67]
-
 main:
-    enter 67, 0            ; 50 bytes for buffer starting at ebp-50 and 4 to file fd + 4 + 4 + 4 + 1
-    mov ebx, dword [ebp + 12]
-    add ebx, 4
-
-	mov flag, 0
-    mov wordsCounter, 0
-    
-	push WFlag
-    push dword [ebx]
-	call cmpstr
-	pop ecx
+    enter 54, 0            ; 50 bytes for buffer starting at ebp-50 and 4 to file fd
+    mov ecx, dword [ebp + 12]
+    add ecx, 4
+    mov ecx, [ecx]          ; file name
+    push ecx
+    call open
     pop ecx 
-    cmp eax, 0
-    je .foundWFlag
-
-	push WsFlag
-    push dword [ebx]
-	call cmpstr
-	pop ecx
-    pop ecx 
-    cmp eax, 0
-    je .foundWsFlag
-
-.fileOpener:
-    mov edx, [ebx]          ; file name
-	mov fileName, edx       ; store file name
-	push edx
-    call open               ; fd at eax if succeed
-    pop edx 
 
     mov [ebp - 54], eax    ; fd -> stack
 
 .fileReader:
-    push dword 50        ; arg1 for read - size to read
-    mov ebx, ebp
-    sub ebx, 50             ; ebx points buffer start  
-    push ebx                ; arg2 for read - buffer
+    push 50        ; arg1 for read - size to read
+    mov ecx, ebp
+    sub ecx, 50             ; ecx points buffer start  
+    push ecx                ; arg2 for read - buffer
     push dword [ebp - 54]   ; arg3 for read - fd
     call read
-    pop ebx
-    pop ebx
-    pop ebx
+    pop ecx
+    pop ecx
+    pop ecx  
 
     cmp eax, 0               ; check if read something
-    jne .printer
+    jg .printer
 
     push dword [ebp - 54]  ; arg1 fd
     call close
-    pop ebx         
-
-	cmp flag, 1
-    ; je .printCounter
-
-	jmp .exit 
+    pop ecx              
+	mov eax, 0              
+	leave
+    ret   
  
-.foundWFlag:
-	add ebx, 4              ; ebx points to file name
-    mov flag, 1             ; remember flag -w
-    jmp .fileOpener
-
-.foundWsFlag:
-	add ebx, 4              ; ebx points to file name
-    mov flag, 2             ; remember flag -w
-    jmp .fileOpener
-
 .printer:
-	cmp flag, 1
-	je .WFlagHandler
-
-	; cmp flag, 2
-	; je .WsFlagHandler
-
-	; else no flag
     push eax                ; arg1 from "read" num of bytes
-    mov ebx, ebp
-    sub ebx, 50
-    push ebx                ; arg2 buffer
+    mov ecx, ebp
+    sub ecx, 50
+    push ecx                ; arg2 buffer
     push 1                  ; arg3 stdout
     call write
-    pop ebx
-    pop ebx
-    pop ebx                 
+    pop ecx
+    pop ecx
+    pop ecx                 
 
-    jmp .fileReader           ; continue reading
-
-.exit:
-	push dword 1                ; arg1 to write - num of bytes 
-    push dword 10                ; arg2 to write - counter as string
-    push 1                  ; arg3 to write - stdout fd 
-    call write
-    pop ebx
-    pop ebx
-    pop ebx                 ; clean stack
-    
-    mov eax, 0              ; default success return
-	leave
-    ret
-
-.WFlagHandler:
+    jmp .fileReader           ; continue reading    
 
 read:
     enter 0, 0 ; replace "push ebp mov ebp, esp"
