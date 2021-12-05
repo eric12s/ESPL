@@ -8,13 +8,15 @@
 #include <stdlib.h>
 
 void handleCd(cmdLine *cmdLine);
+char history[15][100] = {};
+int historyCount = 0;
+void handleHistory();
 
 void execute(cmdLine *cmdLine) {
     int result;
     int pid = fork();
     if (pid == 0) {
             result = execvp(cmdLine->arguments[0], cmdLine->arguments);
-
         if (result == -1) {
             perror("ERROR");
         }
@@ -40,8 +42,14 @@ int main(int argc, char const *argv[]){
             break;
 
         cmdLine *line = parseCmdLines(input);
+
+        input[strcspn(input, "\n")] = 0;
+        strcpy(history[historyCount], input);
+        historyCount += 1;
         if (strcmp("cd", line->arguments[0]) == 0)
             handleCd(line);
+        else if (strcmp("history", line->arguments[0]) == 0)
+            handleHistory();
         else
             execute(line);
         freeCmdLines(line);
@@ -64,5 +72,12 @@ void handleCd(cmdLine *cmdLine) {
 
     if (result) {
         perror("ERROR");
+    }
+}
+
+void handleHistory() {
+    size_t i;
+    for (i = 0; i < historyCount; i++) {
+        printf("%s\n", history[i]);
     }
 }
