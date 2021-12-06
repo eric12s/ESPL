@@ -10,6 +10,8 @@
 void handleCd(cmdLine *cmdLine);
 int historyCount = 0;
 void handleHistory();
+int isExclamationMarkPrefix(char *command);
+void handleExclamationMark(char *history[], char *command);
 
 void execute(cmdLine *cmdLine) {
     int result;
@@ -47,14 +49,18 @@ int main(int argc, char const *argv[]){
         cmdLine *line = parseCmdLines(input);
 
         input[strcspn(input, "\n")] = 0;
-        strcpy(history[historyCount], input);
-        historyCount += 1;
-        if (strcmp("cd", line->arguments[0]) == 0)
-            handleCd(line);
-        else if (strcmp("history", line->arguments[0]) == 0)
-            handleHistory(history);
-        else
-            execute(line);
+        if (isExclamationMarkPrefix(line->arguments[0]) == 0)
+            handleExclamationMark(history, line->arguments[0]); 
+        else {
+            strcpy(history[historyCount], input);
+            historyCount += 1;
+            if (strcmp("cd", line->arguments[0]) == 0)
+                handleCd(line);
+            else if (strcmp("history", line->arguments[0]) == 0)
+                handleHistory(history);
+            else
+                execute(line);
+        }
         freeCmdLines(line);
     }
 
@@ -85,4 +91,30 @@ void handleHistory(char* history[]) {
     for (i = 0; i < historyCount; i++) {
         printf("%s\n", history[i]);
     }
+}
+
+int isExclamationMarkPrefix(char* command) {
+    char* exclamationMark = "!";
+    return strncmp(exclamationMark, command, strlen(exclamationMark));
+}
+
+void handleExclamationMark(char* history[], char* command) {
+    memmove(command, command + 1, strlen(command));
+    int historyIndex = atoi(command);
+    if (historyIndex < historyCount) {
+        strcpy(history[historyCount], history[historyIndex]);
+        historyCount += 1;
+
+        cmdLine *line = parseCmdLines(history[historyIndex]);
+        if (strcmp("cd", line->arguments[0]) == 0)
+            handleCd(line);
+        else if (strcmp("history", line->arguments[0]) == 0)
+            handleHistory(history);
+        else
+            execute(line);
+
+        freeCmdLines(line);
+    }
+    else
+        printf("ERROR: Not enough history lines!\n");
 }
