@@ -9,6 +9,7 @@
 
 void handleCd(cmdLine *cmdLine);
 int historyCount = 0;
+int isHistoryFull = 0;
 void handleHistory();
 int isExclamationMarkPrefix(char *command);
 void handleExclamationMark(char *history[], char *command);
@@ -54,6 +55,10 @@ int main(int argc, char const *argv[]){
         else {
             strcpy(history[historyCount], input);
             historyCount += 1;
+            if (historyCount == 255) {
+                historyCount = 0;
+                isHistoryFull = 1;
+            }
             if (strcmp("cd", line->arguments[0]) == 0)
                 handleCd(line);
             else if (strcmp("history", line->arguments[0]) == 0)
@@ -88,8 +93,17 @@ void handleCd(cmdLine *cmdLine) {
 
 void handleHistory(char* history[]) {
     size_t i;
-    for (i = 0; i < historyCount; i++) {
-        printf("%s\n", history[i]);
+    if (isHistoryFull == 0) {
+        for (i = 0; i < historyCount; i++) {
+            printf("%s\n", history[i]);
+        }
+    } else {
+        for (i = historyCount; i < 256; i++) {
+            printf("%s\n", history[i]);
+        }
+        for (i = 0; i < historyCount; i++) {
+            printf("%s\n", history[i]);
+        }
     }
 }
 
@@ -104,7 +118,10 @@ void handleExclamationMark(char* history[], char* command) {
     if (historyIndex < historyCount) {
         strcpy(history[historyCount], history[historyIndex]);
         historyCount += 1;
-
+        if (historyCount == 255) {
+            historyCount = 0;
+            isHistoryFull = 1;
+        }
         cmdLine *line = parseCmdLines(history[historyIndex]);
         if (strcmp("cd", line->arguments[0]) == 0)
             handleCd(line);
