@@ -1,0 +1,8 @@
+in.txt
+LineParser.c
+LineParser.h
+makefile
+myshell
+myshell.c
+out.txt
+test.txt
