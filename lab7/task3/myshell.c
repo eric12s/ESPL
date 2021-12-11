@@ -17,24 +17,38 @@ void handleExclamationMark(char *history[], char *command);
 void handleIO(cmdLine *cmd_line, char io_need_close[]) ;
 void closeIO(char io_need_close[]);
 
+int pipefd[2];
+
 void execute(cmdLine *cmdLine) {
     int result;
-    int pid = fork();
     char alreadyUsedIO[2] = {0, 0};
-
-    if (pid == 0) {
-        handleIO(cmdLine, alreadyUsedIO);
-        result = execvp(cmdLine->arguments[0], cmdLine->arguments);
-        if (result == -1) {
-            perror("ERROR");
+    pipe(pipefd);
+    int numOfCommands = 1;
+    if (cmdLine->next)
+        numOfCommands = 2;
+    int i;
+    for (i = 0; i < numOfCommands; i ++) {
+        int pid = fork();
+        if (pid == 0) {
+            handleIO(cmdLine, alreadyUsedIO);
+            result = execvp(cmdLine->arguments[0], cmdLine->arguments);
+            if (result == -1) {
+                perror("ERROR");
+            }
+            closeIO(alreadyUsedIO);
+            _exit(result);
+        } else if(pid > 0) {
+            if (cmdLine->blocking) {
+                waitpid(pid, &result, 0);
+            }
         }
-        closeIO(alreadyUsedIO);
-        _exit(result);
-    } else if(pid > 0) {
-        if (cmdLine->blocking) {
-            waitpid(pid, &result, 0);
-        }
+        if (cmdLine->next)
+            close(pipefd[1]);
+        else if (cmdLine->idx == 1)
+            close(pipefd[0]);
+        cmdLine = cmdLine->next;
     }
+            
 }
 
 int main(int argc, char const *argv[]){
@@ -73,6 +87,7 @@ int main(int argc, char const *argv[]){
             else
                 execute(line);
         }
+
         freeCmdLines(line);
     }
 
@@ -153,6 +168,14 @@ void handleIO(cmdLine *cmd_line, char alreadyUsedIO[]) {
         close(STDIN_FILENO);
         dup2(open(cmd_line->inputRedirect, O_RDONLY), STDIN_FILENO);
         alreadyUsedIO[0] = 1;
+    } if (cmd_line->idx == 1) {
+        close(STDIN_FILENO);
+        dup2(pipefd[0], STDIN_FILENO);
+        close(pipefd[0]);
+    } if (cmd_line->next) {
+        close(STDOUT_FILENO);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
     }
 }
 
