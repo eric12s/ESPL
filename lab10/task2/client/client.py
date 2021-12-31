@@ -10,17 +10,53 @@ import threading
 import sys
 import random
 import os
+from os.path import dirname, realpath, join
 import subprocess
 
 bufferSize = 1024
 
-
 #Client Code
+
+class FileReaderDetails():
+    def __init__(self):
+        self.gettingFile = False
+        self.file_name = None
+        self.path = None
+
+    def setParams(self, _gettingFile, _file_name, _path):
+        self.gettingFile = _gettingFile
+        self.file_name = _file_name
+        self.path = _path
+
+    def getParams(self):
+        return self.gettingFile, self.file_name, self.path
+
+
+fileReaderDetails = FileReaderDetails()
+
 def ReceiveData(sock):
     while True:
         try:
             data,addr = sock.recvfrom(bufferSize)
-            print(data.decode('utf-8'))
+            gettingFile, file_name, path = fileReaderDetails.getParams()
+            if gettingFile == False:
+                print(data.decode('utf-8'))
+            else:
+                if path == 'cwd': path = ''
+                else:  path = path + '/'
+                if data.decode() == "file-doesn't-exist":
+                    print("File doesn't exist on server.")
+                    fileReaderDetails.setParams(False, None, None)
+                else:
+                    write_name = 'from_server_'+ file_name
+                    fileReaderDetails.setParams(False, None, None)
+                    if os.path.exists(write_name): os.remove(write_name)
+                    with open(path + write_name ,'wb') as file:
+                        while data:
+                            file.write(data)
+                            sock.settimeout(2)
+                            data, addr = sock.recvfrom(bufferSize)
+                    file.close()
         except:
             pass
 
@@ -37,7 +73,7 @@ def RunClient(serverIP):
     mounted = False
     navigating = False
     print("What is your request:")
-    while True:        
+    while True:
         request = input()
         splittedRequest = request.split()
         if splittedRequest[0] == 'mount':
@@ -53,13 +89,17 @@ def RunClient(serverIP):
                 navigating = False
                 UDPClientSocket.sendto('stopnav'.encode('utf-8'), server)
             else:
-                UDPClientSocket.sendto(request.encode('utf-8'), server)
+                if splittedRequest[0] == 'get':
+                    fileReaderDetails.setParams(True, splittedRequest[1], splittedRequest[2])
+                    UDPClientSocket.sendto(request.encode('utf-8'), server)
+                else:
+                    UDPClientSocket.sendto(request.encode('utf-8'), server)
         elif splittedRequest[0] == 'cd':
             os.chdir(splittedRequest[1])
+
         else:
             result = subprocess.run(splittedRequest, stderr=subprocess.STDOUT, shell=False)
             result.stdout
-    #UDPClientSocket.sendto(data.encode('utf-8'),server)
     UDPClientSocket.close()
     os._exit(1)
 #Client Code Ends Here
