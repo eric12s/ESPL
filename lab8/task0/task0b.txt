@@ -1,0 +1,19 @@
+1.	What is the offset of the section header table?
+		4412 (Start of section headers)
+2.	How many section headers/entries are there?
+		29
+3.	Find the offset of the shstrtab.
+		the offset - 00104b
+		From readelf -S [26]
+4.	Find the offset (file location) of the function main. (hint: use readelf -s and readelf -S)
+        readelf -s:
+            65: 08048464   175 FUNC    GLOBAL DEFAULT   13 main
+        from readelf -S:
+            [13] .text             PROGBITS        080483b0 0003b0 00020c 00  AX  0   0 16
+
+        main offset = main VA - .text VA + .text offset
+5.	Find the size of the function main.
+        175
+6.	Which section does the main belong to?
+        .text
+        [13] .text             PROGBITS        080483b0 0003b0 00020c 00  AX  0   0 16

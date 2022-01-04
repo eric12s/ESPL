@@ -1,0 +1,13 @@
+1.	Add execute permissions to both files: chmod u+x
+2.	Run the files.
+3.	Do they differ in size? (hint: use ls -l *chezi)
+		No
+4.	Why does their output differ? (hint: use readelf -h)
+		They are different in the entry point address.
+        
+5.	In what way is the entry point represented in the ELF file (arrangement of bytes: see ELF documentation page 9) ?
+	    e_entry - This member gives the virtual address to which the system first transfers control, thus
+	    starting the process. If the file has no associated entry point, this member holds zero.
+
+6.	Now that you know where the entry point is written in the elf header and its length, open chezi with hexedit and modify it fix chezi, so that it behaves like originalchezi.
+        Modified.
