@@ -1,12 +1,13 @@
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <fcntl.h>
+
 #include "elf.h"
 
 Elf32_Shdr *getSectionHeaders(Elf32_Ehdr *elfHeader, char *address) {
@@ -19,19 +20,15 @@ Elf32_Shdr *getSectionHeaders(Elf32_Ehdr *elfHeader, char *address) {
     return sectionHeaders;
 }
 
-void print_data_encoding_format(Elf32_Ehdr *header) {
-    if (header->e_ident[5] == ELFDATA2LSB)
-        printf("The dataata: Two's complement, little-endian\n");
-    else if (header->e_ident[5] == ELFDATA2MSB)
-        printf("The data: Two's complement, big-endian\n");
-    else
-        printf("The data: Couldn't find the right format\n");
-}
-
-void printSizesForSectionHeaders(Elf32_Shdr *sectionHeaders, int numOfSectionHeaders) {
-    int i;
-    for (i = 0; i < numOfSectionHeaders; i++)
-        printf("Size of section %d: %d bytes\n", i + 1, sectionHeaders[i].sh_size);
+void printSections(Elf32_Shdr* shdrs, Elf32_Half shstrtabIndex, int shnum, char* ovAddress) {
+    char* sectionStrTable = ovAddress + shdrs[shstrtabIndex].sh_offset;
+    for (int i = 0; i < shnum; i++) {
+        char* name = sectionStrTable + shdrs[i].sh_name;
+        Elf32_Addr address = shdrs[i].sh_addr;
+        Elf32_Off offset = shdrs[i].sh_offset;
+        Elf32_Word size = shdrs[i].sh_size;
+        printf("[%d] %s   %x   %d   %d \n", i + 1, name, address, offset, size);
+    }
 }
 
 int main(int argc, char** argv) {
@@ -39,6 +36,7 @@ int main(int argc, char** argv) {
         printf("Please provide a file name\n");
         return 0;
     }
+
     FILE* file = fopen(argv[1], "r");
     fseek(file, 0, SEEK_END);
     int size = ftell(file);
@@ -53,17 +51,10 @@ int main(int argc, char** argv) {
         printf("The file is not elf\n");
         return 0;
     }
-    printf("%s\n", buf);
 
     Elf32_Ehdr elfHeader = *(Elf32_Ehdr *)address;
     Elf32_Shdr *sectionHeaders = getSectionHeaders(&elfHeader, address);
-    print_data_encoding_format(&elfHeader);
-    printf("The entry point: 0x%x\n", elfHeader.e_entry);
-    printf("The file offset: %d\n", elfHeader.e_shentsize);
-    printf("The number of section header entries: %d\n", elfHeader.e_shnum);
-    printSizesForSectionHeaders(sectionHeaders, elfHeader.e_shnum);
-    printf("The index of shstrtab in section header: %d\n", elfHeader.e_shstrndx);
-
+    printSections(sectionHeaders, elfHeader.e_shstrndx, elfHeader.e_shnum, address);
     free(sectionHeaders);
 
     return 0;
