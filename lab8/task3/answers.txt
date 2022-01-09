@@ -1,0 +1,18 @@
+readelf -s fibonacci
+    72: 0000065d   124 FUNC    GLOBAL DEFAULT   14 fib
+
+readelf -S fibonacci
+    [14] .text             PROGBITS        00000520 000520 000342 00  AX  0   0 16
+
+    520 + 1629 - 520 = 1629
+
+readelf -s task3
+    68: 0000056d    82 FUNC    GLOBAL DEFAULT   14 fib
+
+readelf -S task3
+    [14] .text             PROGBITS        00000430 000430 000252 00  AX  0   0 16
+
+    430 + 1389 - 430 = 1389
+
+    
+./patch task3 1389 82 fibonacci 1629
